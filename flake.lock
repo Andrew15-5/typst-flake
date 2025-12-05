@@ -92,7 +92,8 @@
         "flake-parts": "flake-parts",
         "nixpkgs": "nixpkgs",
         "rust-manifest": "rust-manifest",
-        "systems": "systems"
+        "systems": "systems",
+        "typst": "typst"
       }
     },
     "rust-analyzer-src": {
@@ -136,6 +137,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "typst": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1761296305,
+        "narHash": "sha256-+a4CqB2Lk4DxQesLJOwgzMsEFtk+8KB7brP15r/eVn8=",
+        "owner": "typst",
+        "repo": "typst",
+        "rev": "dd1e6e94f73db6a257a5ac34a6320e00410a2534",
+        "type": "github"
+      },
+      "original": {
+        "owner": "typst",
+        "repo": "typst",
         "type": "github"
       }
     }

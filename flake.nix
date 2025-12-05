@@ -47,7 +47,8 @@
           ...
         }:
         let
-          cargoToml = lib.importTOML ./Cargo.toml;
+          root = inputs.typst;
+          cargoToml = lib.importTOML "${root}/Cargo.toml";
 
           pname = "typst";
           version = cargoToml.workspace.package.version;
@@ -60,16 +61,20 @@
 
           # Typst files to include in the derivation.
           # Here we include Rust files, docs and tests.
-          src = lib.fileset.toSource {
-            root = "${typst}";
-            fileset = lib.fileset.unions [
-              ./Cargo.toml
-              ./Cargo.lock
-              ./rustfmt.toml
-              ./crates
-              ./docs
-              ./tests
-            ];
+          sourcePaths = [
+            "Cargo.toml"
+            "Cargo.lock"
+            "rustfmt.toml"
+            "crates"
+            "docs"
+            "tests"
+          ];
+
+          src = lib.sources.cleanSourceWith {
+            src = root;
+
+            filter = path: type:
+              builtins.any (accepted: lib.strings.hasPrefix "${root}/${accepted}" path) sourcePaths;
           };
 
           # Typst derivation's args, used within crane's derivation generation
