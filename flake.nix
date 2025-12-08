@@ -1,8 +1,6 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    systems.url = "github:nix-systems/default";
 
     typst = {
       url = "github:typst/typst";
@@ -22,31 +20,25 @@
 
   outputs =
     inputs@{
-      flake-parts,
       crane,
       nixpkgs,
       fenix,
       rust-manifest,
-      typst,
       self,
       ...
     }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import inputs.systems;
-
-      imports = [
-        inputs.flake-parts.flakeModules.easyOverlay
-      ];
-
+    let
+      systems = ["aarch64-darwin" "aarch64-linux" "x86_64-darwin" "x86_64-linux"];
       perSystem =
-        {
-          self',
-          pkgs,
-          lib,
-          system,
-          ...
-        }:
+        inputsFunc:
         let
+          result = nixpkgs.lib.genAttrs systems (system:
+            inputsFunc rec {
+              inherit system;
+              pkgs = import nixpkgs { inherit system; };
+              lib = pkgs.lib;
+              self' = result;
+
           root = inputs.typst;
           cargoToml = lib.importTOML "${root}/Cargo.toml";
 
@@ -124,23 +116,23 @@
               meta.mainProgram = "typst";
             }
           );
+        });
+      in result;
         in
         {
-          formatter = pkgs.nixfmt-tree;
+          formatter = perSystem ({pkgs, ...}: pkgs.nixfmt-tree);
 
-          packages = {
+          packages = perSystem ({typst, self', ...}: {
             default = typst;
             typst-dev = self'.packages.default;
-          };
+          });
 
-          overlayAttrs = builtins.removeAttrs self'.packages [ "default" ];
-
-          apps.default = {
+          apps.default = perSystem ({lib, typst, ...}: {
             type = "app";
             program = lib.getExe typst;
-          };
+          });
 
-          checks = {
+          checks = perSystem ({craneLib, commonCraneArgs, cargoArtifacts, ...}: {
             typst-fmt = craneLib.cargoFmt commonCraneArgs;
             typst-clippy = craneLib.cargoClippy (
               commonCraneArgs
@@ -156,9 +148,9 @@
                 cargoTestExtraArgs = "--workspace";
               }
             );
-          };
+          });
 
-          devShells.default = craneLib.devShell {
+          devShells.default = perSystem ({pkgs, self', typst, rust-toolchain, craneLib, ...}: craneLib.devShell {
             checks = self'.checks;
             inputsFrom = [ typst ];
 
@@ -176,7 +168,6 @@
                 cargo test --workspace --test tests -- "$@"
               '')
             ];
+          });
           };
-        };
-    };
 }
