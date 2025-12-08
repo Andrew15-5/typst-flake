@@ -89,7 +89,12 @@
             nativeBuildInputs = [
               pkgs.pkg-config
               pkgs.openssl.dev
+              pkgs.perl # Necessary to build and vendor OpenSSL
             ];
+
+            LD_LIBRARY_PATH = lib.makeLibraryPath [ pkgs.openssl ];
+
+            cargoExtraArgs = "--locked --features vendor-openssl";
           };
 
           # Derivation with just the dependencies, so we don't have to keep
