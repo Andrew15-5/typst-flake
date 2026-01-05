@@ -6,18 +6,16 @@ This repository contains a Nix Flake[^1] for Typst. It exports a Nix package tha
 
 ### Compiling Typst
 
-To build the Flake using its default Typst version (usually the latest release), first ensure Nix is properly installed with Flake support.[^2] Then, simply clone this repository's contents locally, open a terminal there and write the command below:
+To build and run Typst through the Flake using its default Typst version (usually the latest release), first ensure Nix is properly installed with Flake support.[^2] Then, simply execute the command below with the appropriate arguments. For example, to compile a Typst file:
 
 ```sh
-nix build .
+nix run github:typst/typst-flake -- compile doc.typ
 ```
 
-This should output a runnable Typst binary under `result/bin/typst`.
-
-Alternatively, you can build and run in one go with `nix run .`, such as in the sample command below:
+Alternatively, you can compile Typst without running using the command below, which will output a runnable Typst binary under `result/bin/typst`:
 
 ```sh
-nix run . -- compile /some/path/doc.typ
+nix build github:typst/typst-flake
 ```
 
 ### Compiling a specific Typst commit
@@ -26,13 +24,13 @@ To compile another Typst version or commit, you can use `--override-input` when 
 
 ```sh
 # Compile the latest main commit
-nix build . --override-input typst github:typst/typst
+nix run github:typst/typst-flake --override-input typst github:typst/typst -- --help
 
 # Compile a specific branch: 0.13 (release 0.13.1)
-nix build . --override-input typst github:typst/typst/0.13
+nix run github:typst/typst-flake --override-input typst github:typst/typst/0.13 -- --help
 
 # Compile a specific commit: d60ec29
-nix build . --override-input typst github:typst/typst/d60ec29
+nix run github:typst/typst-flake --override-input typst github:typst/typst/d60ec29 -- --help
 ```
 
 ### Development shell
@@ -40,10 +38,22 @@ nix build . --override-input typst github:typst/typst/d60ec29
 You can use the command below to spawn a development shell. It should contain `rustc` and `cargo` so you can develop Typst as a contributor.
 
 ```sh
-nix develop .
+nix develop github:typst/typst-flake
 ```
 
-### License
+## Contributing
+
+To contribute to the flake, simply clone the repository locally, apply some changes, and build and run Typst with the same commands as above, but replacing `github:typst/typst-flake` with `.` (for the current directory). For example, to build a runnable Typst binary with your changes to the flake, use the command below:
+
+```sh
+nix build .
+```
+
+## A note on compatibility
+
+Please note that the flake is maintained as a best-effort by the community and not officially supported by the Typst team. As such, it is not guaranteed to always be compatible with the latest Typst releases or commits, which might fail to build using the latest version of the flake. However, we will accept contributions to fix any such problems, should they arise.
+
+## License
 
 All code in this repository is licensed under Apache-2.0.
 
